@@ -36,13 +36,61 @@ namespace Zignificant.ConsoleApp
                         DisplayRecord();
                         break;
                     case "u":
-                        Console.WriteLine("You Pressed U");
+                        UpdateRecord();
                         break;
                     case "d":
-                        Console.WriteLine("You Pressed D");
+                        DeleteRecord();
                         break;
                 }
             }
+        }
+
+        private static void DeleteRecord()
+        {
+            Console.Write("Provide Record ID: ");
+            string recordId = Console.ReadLine();
+            using (SqlConnection conn = new SqlConnection(connstring))
+            {
+                using (SqlCommand cmd = new SqlCommand("Birthdates_Delete", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@Id", recordId);
+                    conn.Open();
+                    cmd.ExecuteNonQuery();
+                    conn.Close();
+                }
+            }
+        }
+
+        private static void UpdateRecord()
+        {
+            Console.Write("Provide Record ID: ");
+            string recordId = Console.ReadLine();
+            GetRecordById(recordId);
+            Console.Write("Full Name: ");
+            var fullname = Console.ReadLine();
+            Console.Write("Date of Birth: ");
+            var dob = Console.ReadLine();
+            Console.Write("Date of Death: ");
+            var dod = Console.ReadLine();
+            Console.Write("Notoriety: ");
+            var notoriety = Console.ReadLine();
+            using (SqlConnection conn = new SqlConnection(connstring))
+            {
+                using (SqlCommand cmd = new SqlCommand("Birthdates_Update", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@Id", recordId);
+                    cmd.Parameters.AddWithValue("@FulName", fullname);
+                    cmd.Parameters.AddWithValue("@Dob", dob);
+                    cmd.Parameters.AddWithValue("@Dod", dod);
+                    cmd.Parameters.AddWithValue("@Notoriety", notoriety);
+                    conn.Open();
+                    cmd.ExecuteNonQuery();
+                    conn.Close();
+                }
+            }
+
         }
 
         private static void CreateRecord()
@@ -75,6 +123,12 @@ namespace Zignificant.ConsoleApp
         {
             Console.Write("Provide Record ID: ");
             string recordId = Console.ReadLine();
+            GetRecordById(recordId);
+            Thread.Sleep(5000);
+        }
+
+        private static void GetRecordById(string recordId)
+        {
             using (SqlConnection conn = new SqlConnection(connstring))
             {
                 using (SqlCommand cmd = new SqlCommand("BirthDates_SelectById", conn))
@@ -108,7 +162,6 @@ namespace Zignificant.ConsoleApp
                     conn.Close();
                 }
             }
-            Thread.Sleep(5000);
         }
 
         private static void ListBirthdays()

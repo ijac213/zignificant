@@ -1,13 +1,19 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Threading;
+using Zignificant.Models.Requests;
+using Zignificant.Models.Responses;
+using Zignificant.Repository;
 
 namespace Zignificant.ConsoleApp
 {
     class Program
     {
         static string connstring = "Data Source=(local);Initial Catalog=zignifikant;User ID=sa;Password=Password1!";
+
+        static BirthdateRepository _repo = new BirthdateRepository();
 
         static void Main(string[] args)
         {
@@ -48,149 +54,92 @@ namespace Zignificant.ConsoleApp
         private static void DeleteRecord()
         {
             Console.Write("Provide Record ID: ");
-            string recordId = Console.ReadLine();
-            using (SqlConnection conn = new SqlConnection(connstring))
-            {
-                using (SqlCommand cmd = new SqlCommand("Birthdates_Delete", conn))
-                {
-                    cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.Parameters.AddWithValue("@Id", recordId);
-                    conn.Open();
-                    cmd.ExecuteNonQuery();
-                    conn.Close();
-                }
-            }
+            int recordId = int.Parse(Console.ReadLine());
+            _repo.Delete(recordId);
         }
 
         private static void UpdateRecord()
         {
+            BirthdateUpdateRequest req = new BirthdateUpdateRequest();
             Console.Write("Provide Record ID: ");
-            string recordId = Console.ReadLine();
-            GetRecordById(recordId);
-            Console.Write("Full Name: ");
-            var fullname = Console.ReadLine();
-            Console.Write("Date of Birth: ");
-            var dob = Console.ReadLine();
-            Console.Write("Date of Death: ");
-            var dod = Console.ReadLine();
-            Console.Write("Notoriety: ");
-            var notoriety = Console.ReadLine();
-            using (SqlConnection conn = new SqlConnection(connstring))
+            req.Id = int.Parse(Console.ReadLine());
+            BirthdateResponse res = _repo.GetRecordById(req.Id);
+            Console.Write($"Full Name({res.FullName}): ");
+            req.FullName = Console.ReadLine();
+            if (string.IsNullOrWhiteSpace(req.FullName))
             {
-                using (SqlCommand cmd = new SqlCommand("Birthdates_Update", conn))
-                {
-                    cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.Parameters.AddWithValue("@Id", recordId);
-                    cmd.Parameters.AddWithValue("@FulName", fullname);
-                    cmd.Parameters.AddWithValue("@Dob", dob);
-                    cmd.Parameters.AddWithValue("@Dod", dod);
-                    cmd.Parameters.AddWithValue("@Notoriety", notoriety);
-                    conn.Open();
-                    cmd.ExecuteNonQuery();
-                    conn.Close();
-                }
+                req.FullName = res.FullName;
             }
-
+            Console.Write($"Date of Birth({res.Dob}): ");
+            if (DateTime.TryParse(Console.ReadLine(), out var dob))
+            {
+                req.Dob = dob;
+            }
+            else
+            {
+                req.Dob = res.Dob;
+            }
+            Console.Write($"Date of Death({res.Dod}): ");
+            if (DateTime.TryParse(Console.ReadLine(), out var dod))
+            {
+                req.Dod = dod;
+            }
+            else
+            {
+                req.Dod = res.Dod;
+            }
+            Console.Write($"Notoriety({res.Notoriety}): ");
+            req.Notoriety = Console.ReadLine();
+            if (string.IsNullOrWhiteSpace(req.Notoriety))
+            {
+                req.Notoriety = res.Notoriety;
+            }
+            _repo.Update(req);
         }
 
         private static void CreateRecord()
         {
+            BirthdateCreateRequest req = new BirthdateCreateRequest();
             Console.Write("Full Name: ");
-            var fullname = Console.ReadLine();
+            req.FullName = Console.ReadLine();
             Console.Write("Date of Birth: ");
-            var dob = Console.ReadLine();
+            req.Dob = DateTime.Parse(Console.ReadLine());
             Console.Write("Date of Death: ");
-            var dod = Console.ReadLine();
-            Console.Write("Notoriety: ");
-            var notoriety = Console.ReadLine();
-            using (SqlConnection conn = new SqlConnection(connstring))
+            if (DateTime.TryParse(Console.ReadLine(), out var dod))
             {
-                using (SqlCommand cmd = new SqlCommand("BirthDates_Insert", conn))
-                {
-                    cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.Parameters.AddWithValue("@FulName", fullname);
-                    cmd.Parameters.AddWithValue("@Dob", dob);
-                    cmd.Parameters.AddWithValue("@Dod", dod);
-                    cmd.Parameters.AddWithValue("@Notoriety", notoriety);
-                    conn.Open();
-                    cmd.ExecuteNonQuery();
-                    conn.Close();
-                }
-            }
+                req.Dod = dod;
+            } 
+            Console.Write("Notoriety: ");
+            req.Notoriety = Console.ReadLine();
+            _repo.Create(req);
         }
 
         private static void DisplayRecord()
         {
             Console.Write("Provide Record ID: ");
-            string recordId = Console.ReadLine();
+            int recordId = int.Parse(Console.ReadLine());
             GetRecordById(recordId);
             Thread.Sleep(5000);
         }
 
-        private static void GetRecordById(string recordId)
+        private static void GetRecordById(int recordId)
         {
-            using (SqlConnection conn = new SqlConnection(connstring))
-            {
-                using (SqlCommand cmd = new SqlCommand("BirthDates_SelectById", conn))
-                {
-                    cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.Parameters.AddWithValue("@Id", recordId);
-                    conn.Open();
-                    SqlDataReader reader = cmd.ExecuteReader();
-                    if (reader.Read())
-                    {
-                        int id = reader.GetInt32("Id");
-                        string fullname = reader.GetString("FulName");
-                        DateTime dob = reader.GetDateTime("Dob");
-                        DateTime? dod = null;
-                        if (!reader.IsDBNull("Dod"))
-                        {
-                            dod = reader.GetDateTime("Dod");
-                        }
-                        string notoriety = reader.GetString("Notoriety");
-                        DateTime createdat = reader.GetDateTime("CreatedAt");
-                        DateTime updatedat = reader.GetDateTime("UpdatedAt");
-
-                        Console.WriteLine($"Id: {id}");
-                        Console.WriteLine($"Name: {fullname}");
-                        Console.WriteLine($"DOB: {dob}");
-                        Console.WriteLine($"DOD: {dod}");
-                        Console.WriteLine($"Notoriety: {notoriety}");
-                        Console.WriteLine($"Created At: {createdat}");
-                        Console.WriteLine($"Updated At: {updatedat}");
-                    }
-                    conn.Close();
-                }
-            }
+            BirthdateResponse res = _repo.GetRecordById(recordId);
+            Console.WriteLine($"Id: {res.Id}");
+            Console.WriteLine($"Name: {res.FullName}");
+            Console.WriteLine($"DOB: {res.Dob}");
+            Console.WriteLine($"DOD: {res.Dod}");
+            Console.WriteLine($"Notoriety: {res.Notoriety}");
+            Console.WriteLine($"Created At: {res.CreatedAt}");
+            Console.WriteLine($"Updated At: {res.UpdatedAt}");
         }
 
         private static void ListBirthdays()
         {
-            using (SqlConnection conn = new SqlConnection(connstring))
+            List<BirthdateResponse> res = _repo.GetAll();
+            foreach (var item in res)
             {
-                using (SqlCommand cmd = new SqlCommand("BirthDates_SelectAll", conn))
-                {
-                    cmd.CommandType = CommandType.StoredProcedure;
-                    conn.Open();
-                    SqlDataReader reader = cmd.ExecuteReader();
-                    while (reader.Read())
-                    {
-                        int id = reader.GetInt32("Id");
-                        string fullname = reader.GetString("FulName");
-                        DateTime dob = reader.GetDateTime("Dob");
-                        DateTime? dod = null;
-                        if (!reader.IsDBNull("Dod"))
-                        {
-                            dod = reader.GetDateTime("Dod");
-                        }
-                        string notoriety = reader.GetString("Notoriety");
-                        DateTime createdat = reader.GetDateTime("CreatedAt");
-                        DateTime updatedat = reader.GetDateTime("UpdatedAt");
-
-                        Console.WriteLine($"{id} {fullname}");
-                    }
-                    conn.Close();
-                }
+                Console.WriteLine($"{item.Id} - {item.FullName}");
             }
         }
     }

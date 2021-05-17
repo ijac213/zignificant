@@ -6,7 +6,7 @@ namespace Zignificant.Repository
 {
     public interface IBirthdateRepository
     {
-        void Create(BirthdateCreateRequest req);
+        BirthdateResponse Create(BirthdateCreateRequest req);
         void Delete(int id);
         List<BirthdateResponse> GetAll();
         BirthdateResponse GetRecordById(int id);

@@ -6,7 +6,7 @@ namespace Zignificant.Data
 {
     public interface IBirthdates
     {
-        void Create(BirthdateCreateRequest req);
+        int Create(BirthdateCreateRequest req);
         void Delete(int recordId);
         List<BirthdateResponse> GetAll();
         BirthdateResponse GetRecordById(int recordId);

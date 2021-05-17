@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System;
 using Zignificant.Models.Requests;
+using Zignificant.Models.Responses;
 using Zignificant.Repository;
 
 namespace Zignificant.Api.Controllers
@@ -28,8 +29,8 @@ namespace Zignificant.Api.Controllers
         [HttpPost]
         public IActionResult CreateBirthDate([FromBody] BirthdateCreateRequest req)
         {
-            _birthdateRepository.Create(req);
-            return Ok();
+            BirthdateResponse resp = _birthdateRepository.Create(req);
+            return CreatedAtAction("GetBirthDateById", new { birthDateId = resp.Id}, resp);
         }
 
         [HttpDelete("{birthDateId:int}")]
@@ -46,7 +47,7 @@ namespace Zignificant.Api.Controllers
             }
         }
 
-        [HttpGet("{birthDateId:int}")]
+        [HttpGet("{birthDateId:int}", Name = "GetBirthDateById")]
         public IActionResult GetBirthDateById([FromRoute] int birthDateId)
         {
             try

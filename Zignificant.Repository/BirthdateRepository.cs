@@ -20,9 +20,18 @@ namespace Zignificant.Repository
             _birthdates.Update(req);
         }
 
-        public void Create(BirthdateCreateRequest req)
+        public BirthdateResponse Create(BirthdateCreateRequest req)
         {
-            _birthdates.Create(req);
+            int id = _birthdates.Create(req);
+            BirthdateResponse resp = new BirthdateResponse();
+            resp.Id = id;
+            resp.FullName = req.FullName;
+            resp.Dob = req.Dob;
+            resp.Dod = req.Dod;
+            resp.Notoriety = req.Notoriety;
+            resp.CreatedAt = DateTime.Now;
+            resp.UpdatedAt = DateTime.Now;
+            return resp;
         }
 
         public BirthdateResponse GetRecordById(int id)

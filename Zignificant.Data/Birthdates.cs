@@ -45,22 +45,28 @@ namespace Zignificant.Data
             }
         }
 
-        public void Create(BirthdateCreateRequest req)
+        public int Create(BirthdateCreateRequest req)
         {
+            int result = 0;
             using (SqlConnection conn = new SqlConnection(ConnString))
             {
                 using (SqlCommand cmd = new SqlCommand("BirthDates_Insert", conn))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
+                    SqlParameter p = new SqlParameter("@Id", SqlDbType.Int);
+                    p.Direction = ParameterDirection.Output;
+                    cmd.Parameters.Add(p);
                     cmd.Parameters.AddWithValue("@FulName", req.FullName);
                     cmd.Parameters.AddWithValue("@Dob", req.Dob);
                     cmd.Parameters.AddWithValue("@Dod", req.Dod);
                     cmd.Parameters.AddWithValue("@Notoriety", req.Notoriety);
                     conn.Open();
                     cmd.ExecuteNonQuery();
+                    result = (int)cmd.Parameters["@Id"].Value;
                     conn.Close();
                 }
             }
+            return result;
         }
 
         public BirthdateResponse GetRecordById(int recordId)

@@ -1,16 +1,10 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Zignificant.Data;
 using Zignificant.Repository;
 
@@ -31,6 +25,27 @@ namespace Zignificant.Api
             string connString = Configuration.GetConnectionString("DefaultConnection");
             services.AddScoped<IBirthdateRepository, BirthdateRepository>();
             services.AddScoped<IBirthdates, Birthdates>((IServiceProvider serviceProvider) => new Birthdates(connString));
+            services.AddCors(options =>
+            {
+                options.AddPolicy("AllowAllCors", builder =>
+                {
+                    builder
+                        .AllowAnyHeader()
+                        .AllowAnyMethod()
+                        .AllowCredentials()
+                        .SetIsOriginAllowedToAllowWildcardSubdomains()
+                        .SetIsOriginAllowed(delegate (string requestingOrigin)
+                        {
+                            return true;
+                        })
+                        .Build();
+                });
+            });
+           //services.AddMvc();
+           // services.Configure<MvcOptions>(options =>
+           // {
+           //     options.Filters.Add(new CorsAuthorizationFilterFactory("AllowAllCors"));
+           // });
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
@@ -52,6 +67,8 @@ namespace Zignificant.Api
 
             app.UseRouting();
 
+            app.UseCors("AllowAllCors");
+            
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>

@@ -4,6 +4,7 @@ import Moment from 'react-moment';
 import 'bootstrap/dist/css/bootstrap.css';
 import './BirthdateList.module.css';
 import { Link } from 'react-router-dom';
+import Swal from 'sweetalert2';
 
 
 class BirthdateList extends React.Component {
@@ -13,10 +14,30 @@ class BirthdateList extends React.Component {
 
   handleClick=id=>{
     console.log(id)
-    axios.delete(`https://localhost:44352/api/Birthdate/${id}`)
-      .then(resp=>{
-        this.loadData();
-      })
+    Swal.fire({
+      title: 'Are You Sure?',
+      text: "You Won't Be Able To Revert This!",
+      icon: 'warning',
+      showCancelButton: true,
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, delete it!'
+    }).then(result => {
+      if (result.isConfirmed) {
+         axios.delete(`https://localhost:44352/api/Birthdate/${id}`)
+            .then(resp=>{
+              Swal.fire(
+                'Deleted!',
+                'The record has been deleted.',
+                'success'
+              );
+            this.loadData();
+          })
+      }
+    });
+    // axios.delete(`https://localhost:44352/api/Birthdate/${id}`)
+    //   .then(resp=>{
+    //     this.loadData();
+    //   })
   }
 
   loadData=()=>{

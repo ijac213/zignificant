@@ -10,6 +10,7 @@ import EditBirthday from './EditBirthday';
 import './App.css';
 import BirthdateList from './BirthdateList';
 import EditBirthday2 from './EditBirthdays2';
+import HistoryList from "./Historylist";
 
 function App() {
     const [isNavCollapsed,setIsNavCollapsed] = useState(true);

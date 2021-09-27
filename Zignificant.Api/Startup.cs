@@ -25,6 +25,8 @@ namespace Zignificant.Api
             string connString = Configuration.GetConnectionString("DefaultConnection");
             services.AddScoped<IBirthdateRepository, BirthdateRepository>();
             services.AddScoped<IBirthdates, Birthdates>((IServiceProvider serviceProvider) => new Birthdates(connString));
+            services.AddScoped<IHistoryRepository, HistoryRepository>();
+            services.AddScoped<IHistory, History>((IServiceProvider serviceProvider) => new History(connString));
             services.AddCors(options =>
             {
                 options.AddPolicy("AllowAllCors", builder =>

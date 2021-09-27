@@ -87,7 +87,7 @@ class BirthdateList extends React.Component {
             }
           </tbody>
         </table>
-    </div>
+      </div>
     )
   }
 }
